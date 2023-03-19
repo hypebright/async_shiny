@@ -1,0 +1,22 @@
+---
+title: "markdown-doc"
+author: "Veerle van Leemput"
+date: '2023-02-25'
+output: pdf_document
+params:
+  title: ''
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# `r params$title`
+
+This is your R markdown document that contains a basic table about cars:
+
+```{r cars}
+summary(cars)
+```
+
+
