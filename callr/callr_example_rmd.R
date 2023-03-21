@@ -24,45 +24,47 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   # initiate reactive values
-  check_finished <- reactiveValues(value = FALSE)
-  result <- reactiveValues(outcome = NULL,
-                           report_location = NULL)
+  result <- reactiveValues(
+    check_finished = FALSE,
+    result = NULL,
+    bg_proc = NULL,
+    report_location = NULL
+  )
   
   # this part can be useful if you want to update your UI during the process
   # think about doing an expensive calculation and showing preliminary results
   # not a requirement to have, but it shows some extended capabilities of using callR
   observe({
+    req(result$check_finished)
+      
+    # this will invalidate every second
+    invalidateLater(millis = 1000)
     
-    if (check_finished$value == TRUE) {
+    # do something while waiting
+    print(paste0("Still busy at ", Sys.time()))
+    
+    # Make sure that you read out the stdout and stderr. I.e. you need to call $read_output() and $read_error()
+    # See this issue: https://github.com/r-lib/callr/issues/204
+    result$bg_proc$read_output()
+    result$bg_proc$read_error()
+    
+    # whenever the background job is finished the value of is_alive() will be FALSE
+    if (result$bg_proc$is_alive() == FALSE) {
       
-      # this will invalidate every second
-      invalidateLater(millis = 1000)
+      print("Finished!")
       
-      # do something while waiting
-      print(paste0("Still busy at ", Sys.time()))
+      result$check_finished <- FALSE
+      result$bg_proc <- NULL
+      result$result <- "Ready 🚀"
       
-      # Make sure that you read out the stdout and stderr. I.e. you need to call $read_output() and $read_error()
-      # See this issue: https://github.com/r-lib/callr/issues/204
-      result$outcome$read_output()
-      result$outcome$read_error()
-      
-      # whenever the background job is finished the value of is_alive() will be FALSE
-      if (result$outcome$is_alive() == FALSE) {
-        
-        print("Finished!")
-        
-        check_finished$value <- FALSE
-        
-        # simulate a click on the download button, to trigger the actual download
-        shinyjs::runjs("document.getElementById('download_doc_2').click();")
-        
-        output$success_message <- renderText("Ready 🚀")
-        
-      }
+      # simulate a click on the download button, to trigger the actual download
+      shinyjs::runjs("document.getElementById('download_doc_2').click();")
       
     }
     
   })
+  
+  output$success_message <- renderText(result$result)
   
   observeEvent(input$download_doc, {
     
@@ -83,7 +85,7 @@ server <- function(input, output, session) {
     input_params <- list(title = "My R Markdown report!")
     
     # create a background process
-    result$outcome <-
+    result$bg_proc <-
       
       callr::r_bg(
         
@@ -94,7 +96,7 @@ server <- function(input, output, session) {
             # child of the global environment (this isolates the code in the document
             # from the code in this app).
             # note that all of these are function arguments and need to be specified using args = ...!
-            rmarkdown::render(input = input_location, 
+            rmarkdown::render(input = input_location,
                               output_file = output_location,
                               output_format = "pdf_document",
                               params = my_params
@@ -110,7 +112,8 @@ server <- function(input, output, session) {
         
       )
     
-    check_finished$value <- TRUE 
+    result$result <- "Rendering ⏳"
+    result$check_finished <- TRUE
     
   })
   
