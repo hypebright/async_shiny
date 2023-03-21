@@ -3,8 +3,8 @@ library(callr)
 
 ui <- fluidPage(
   titlePanel("Using callR in Shiny"),
-  actionButton("start_job","Start Expensive Job"),
-  tableOutput('result_table')
+  actionButton("start_job", "Start Expensive Job"),
+  tableOutput("result_table")
 )
 
 server <- function(input, output, session) {
@@ -14,7 +14,7 @@ server <- function(input, output, session) {
   result <- reactiveValues(data = NULL)
   
   # set whatever arguments you want to use
-  some_argument <- 'virginica'
+  some_argument <- "virginica"
   
   # callR demonstration
   observeEvent(input$start_job, {
@@ -52,12 +52,10 @@ server <- function(input, output, session) {
       invalidateLater(millis = 1000)
       
       # do something while waiting
-      print(paste0('Still busy at ', Sys.time()))
       
       # whenever the background job is finished the value of is_alive() will be FALSE
       if (result$data$is_alive() == FALSE) {
         
-        print('Finished!')
         
         check_finished$value <- FALSE
         
@@ -65,6 +63,8 @@ server <- function(input, output, session) {
         
       }
       
+      print(paste0("Still busy at ", Sys.time()))
+        print("Finished!")
     }
     
   })
