@@ -12,6 +12,7 @@ server <- function(input, output, session) {
   # initiate reactive values
   bg_proc <- reactiveVal(NULL)
   check_finished <- reactiveVal(FALSE)
+  table_dt <- reactiveVal(NULL)
   
   # set whatever arguments you want to use
   some_argument <- "virginica"
@@ -44,6 +45,7 @@ server <- function(input, output, session) {
     # update reactive vals
     bg_proc(p)
     check_finished(TRUE)
+    table_dt(NULL)
   })
   
   # this part can be useful if you want to update your UI during the process
@@ -71,7 +73,10 @@ server <- function(input, output, session) {
     }
     
   })
-  
+
+  # Display the table data
+  output$result_table <- renderTable(table_dt())
+
 }
 
 shinyApp(ui = ui, server = server)
