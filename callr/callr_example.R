@@ -10,15 +10,16 @@ ui <- fluidPage(
 server <- function(input, output, session) {
   
   # initiate reactive values
-  check_finished <- reactiveValues(value = FALSE)
-  result <- reactiveValues(data = NULL)
+  bg_proc <- reactiveVal(NULL)
+  check_finished <- reactiveVal(FALSE)
   
   # set whatever arguments you want to use
   some_argument <- "virginica"
   
   # callR demonstration
   observeEvent(input$start_job, {
-    result$data <-
+    
+    p <-
       
       r_bg(
         
@@ -40,7 +41,9 @@ server <- function(input, output, session) {
         
       )
     
-    check_finished$value <- TRUE 
+    # update reactive vals
+    bg_proc(p)
+    check_finished(TRUE)
   })
   
   # this part can be useful if you want to update your UI during the process
