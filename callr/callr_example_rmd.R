@@ -87,7 +87,7 @@ server <- function(input, output, session) {
     # create a background process
     result$bg_proc <-
       
-      callr::r_bg(
+      r_bg(
         
         func =
           function(my_params, input_location, output_location) {
