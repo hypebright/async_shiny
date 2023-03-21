@@ -52,7 +52,7 @@ server <- function(input, output, session) {
   # think about doing an expensive calculation and showing preliminary results
   observe({
     
-    if (check_finished$value == TRUE) {
+    req(check_finished())
       
       invalidateLater(millis = 1000)
       
@@ -70,7 +70,6 @@ server <- function(input, output, session) {
       
       print(paste0("Still busy at ", Sys.time()))
         print("Finished!")
-    }
     
   })
 
