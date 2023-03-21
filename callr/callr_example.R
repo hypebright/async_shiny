@@ -53,23 +53,27 @@ server <- function(input, output, session) {
   observe({
     
     req(check_finished())
+    
+    invalidateLater(millis = 1000)
+    
+    # do something while waiting
+    print(paste0("Still busy at ", Sys.time()))
+    
+    p <- isolate(bg_proc())
+    
+    # whenever the background job is finished the value of is_alive() will be FALSE
+    if (p$is_alive() == FALSE) {
       
-      invalidateLater(millis = 1000)
+      print("Finished!")
       
-      # do something while waiting
+      check_finished(FALSE)
+      bg_proc(NULL)
       
-      # whenever the background job is finished the value of is_alive() will be FALSE
-      if (result$data$is_alive() == FALSE) {
-        
-        
-        check_finished$value <- FALSE
-        
-        output$result_table <- renderTable(result$data$get_result())
-        
-      }
+      # update the table data with results
+      # (do not nest setting `output` directly in observe methods)
+      table_dt(p$get_result())
       
-      print(paste0("Still busy at ", Sys.time()))
-        print("Finished!")
+    }
     
   })
 
