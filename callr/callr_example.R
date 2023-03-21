@@ -3,22 +3,24 @@ library(callr)
 
 ui <- fluidPage(
   titlePanel("Using callR in Shiny"),
-  actionButton("start_job","Start Expensive Job"),
-  tableOutput('result_table')
+  actionButton("start_job", "Start Expensive Job"),
+  tableOutput("result_table")
 )
 
 server <- function(input, output, session) {
   
   # initiate reactive values
-  check_finished <- reactiveValues(value = FALSE)
-  result <- reactiveValues(data = NULL)
+  bg_proc <- reactiveVal(NULL)
+  check_finished <- reactiveVal(FALSE)
+  table_dt <- reactiveVal(NULL)
   
   # set whatever arguments you want to use
-  some_argument <- 'virginica'
+  some_argument <- "virginica"
   
   # callR demonstration
   observeEvent(input$start_job, {
-    result$data <-
+    
+    p <-
       
       r_bg(
         
@@ -40,35 +42,44 @@ server <- function(input, output, session) {
         
       )
     
-    check_finished$value <- TRUE 
+    # update reactive vals
+    bg_proc(p)
+    check_finished(TRUE)
+    table_dt(NULL)
   })
   
   # this part can be useful if you want to update your UI during the process
   # think about doing an expensive calculation and showing preliminary results
   observe({
     
-    if (check_finished$value == TRUE) {
+    req(check_finished())
+    
+    invalidateLater(millis = 1000)
+    
+    # do something while waiting
+    print(paste0("Still busy at ", Sys.time()))
+    
+    p <- isolate(bg_proc())
+    
+    # whenever the background job is finished the value of is_alive() will be FALSE
+    if (p$is_alive() == FALSE) {
       
-      invalidateLater(millis = 1000)
+      print("Finished!")
       
-      # do something while waiting
-      print(paste0('Still busy at ', Sys.time()))
+      check_finished(FALSE)
+      bg_proc(NULL)
       
-      # whenever the background job is finished the value of is_alive() will be FALSE
-      if (result$data$is_alive() == FALSE) {
-        
-        print('Finished!')
-        
-        check_finished$value <- FALSE
-        
-        output$result_table <- renderTable(result$data$get_result())
-        
-      }
+      # update the table data with results
+      # (do not nest setting `output` directly in observe methods)
+      table_dt(p$get_result())
       
     }
     
   })
-  
+
+  # Display the table data
+  output$result_table <- renderTable(table_dt())
+
 }
 
 shinyApp(ui = ui, server = server)
