@@ -39,7 +39,7 @@ server <- function(input, output, session) {
       invalidateLater(millis = 1000)
       
       # do something while waiting
-      print(paste0('Still busy at ', Sys.time()))
+      print(paste0("Still busy at ", Sys.time()))
       
       # Make sure that you read out the stdout and stderr. I.e. you need to call $read_output() and $read_error()
       # See this issue: https://github.com/r-lib/callr/issues/204
@@ -49,14 +49,14 @@ server <- function(input, output, session) {
       # whenever the background job is finished the value of is_alive() will be FALSE
       if (result$outcome$is_alive() == FALSE) {
         
-        print('Finished!')
+        print("Finished!")
         
         check_finished$value <- FALSE
         
         # simulate a click on the download button, to trigger the actual download
         shinyjs::runjs("document.getElementById('download_doc_2').click();")
         
-        output$success_message <- renderText('Ready 🚀')
+        output$success_message <- renderText("Ready 🚀")
         
       }
       
@@ -70,10 +70,10 @@ server <- function(input, output, session) {
     # case we don't have write permissions to the current working dir (which
     # can happen when deployed).
     # this also makes the file available to the callR background process
-    temp_report_in <- file.path(tempdir(), paste0(as.integer(Sys.time()), '-markdown-doc.Rmd'))
+    temp_report_in <- file.path(tempdir(), paste0(as.integer(Sys.time()), "-markdown-doc.Rmd"))
     file.copy("./markdown-doc.Rmd", temp_report_in, overwrite = TRUE)
     
-    temp_report_out <- file.path(tempdir(), paste0(as.integer(Sys.time()), '-markdown-doc.pdf'))
+    temp_report_out <- file.path(tempdir(), paste0(as.integer(Sys.time()), "-markdown-doc.pdf"))
     
     # used in the downloadHandler
     result$report_location <- temp_report_out
@@ -100,7 +100,7 @@ server <- function(input, output, session) {
                               params = my_params
             )
             
-            return('finished')
+            return("finished")
             
           },
         
@@ -117,11 +117,11 @@ server <- function(input, output, session) {
   # this gets triggered by the JS click event
   output$download_doc_2 <- downloadHandler(
     
-    filename <- function() {
-      'markdown-doc.pdf'
+    filename = function() {
+      "markdown-doc.pdf"
     },
     
-    content <- function(file) {
+    content = function(file) {
       # copy the file from the temporary location that we set in result$report_location
       file.copy(result$report_location, file)
     }
@@ -131,4 +131,3 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui = ui, server = server)
-
