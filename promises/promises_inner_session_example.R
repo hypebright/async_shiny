@@ -12,7 +12,7 @@ ui <- fluidPage(
   p("Note that clicking 'Start Expensive Job' does not seem
     like a revolution, but the long computation (our complex Sys.sleep() 😉)
     is not blocking for the current or other users in the same session.
-    This is inner-session asynchronicity."),
+    This is both cross-session AND inner-session asynchronicity."),
 
   selectInput(
     inputId = "rows",
@@ -57,7 +57,7 @@ server <- function(input, output, session) {
       table_dt()
 
     print("This will execute immediately,
-          even though table_dt() is not available yet")
+          even though our promise isn't resolved yet")
 
   })
 
