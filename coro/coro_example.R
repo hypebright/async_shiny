@@ -81,6 +81,7 @@ server <- function(input, output) {
 
   })
 
+  # Calculate time that passed
   observe({
 
     req(table_dt())
