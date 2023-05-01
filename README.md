@@ -14,7 +14,7 @@ Asynchronous programming in Shiny can be achieved through various packages that 
 
 * **promises**: two examples demonstrating cross-session asynchronicity using `promises` and `future`. One example demonstrations inner-session asynchronicity as well by making use of a `reactiveVal()` structure. This follows the examples in [Engineering Production-Grade Shiny Apps](https://engineering-shiny.org/optimizing-shiny-code.html#asynchronous-in-shiny).
 * **callr**: two examples that show how to spin up background R processes. The basic example runs a long computation in the background, and the markdown example knits a markdown document in the background.
-* **coro**: under construction 🚧 
+* **coro**: one example that demonstrates how to program concurrently using the async() function from `coro`. In this example, we also use `promises` and we demonstrate how `promise_all()` works to handle multiple promises at the same time. 
 
 ## Future plans
 
