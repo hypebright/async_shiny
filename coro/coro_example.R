@@ -15,7 +15,7 @@ ui <- fluidPage(
     and gives control back to the scheduler. The scheduler constantly
     monitors whether async() operations are ready to make progress or not.
     In the meantime, your Shiny app will just keep running and is not
-    unnecessarily waiting ✨.\n  If you would run this code synchronously,
+    unnecessarily waiting ✨. If you would run this code synchronously,
     it would have taken at least 6 + 5 = 11 seconds. Now it runs
     two jobs concurrently, getting it down to 6 seconds."),
 
