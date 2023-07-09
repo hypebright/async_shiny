@@ -9,8 +9,6 @@ run_task <- function(symbol, start_date, end_date) {
   # simulate long retrieval time
   Sys.sleep(5)
 
-  print(symbol)
-
   # get stock data
   url <- paste0("https://query1.finance.yahoo.com/v8/finance/chart/", symbol, "?period1=", 
                 as.numeric(as.POSIXct(start_date)), "&period2=", as.numeric(as.POSIXct(end_date)), 
