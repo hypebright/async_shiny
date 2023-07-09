@@ -82,7 +82,7 @@ server <- function(input, output, session) {
       packages = c("httr", "jsonlite", "ggplot2")
     )
     reactive_poll(TRUE)
-
+    
   })
   
   # event loop to collect finished tasks

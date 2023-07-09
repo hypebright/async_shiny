@@ -5,17 +5,17 @@ library(mirai.promises)
 
 # Function to retrieve stock data
 run_task <- function(symbol, start_date, end_date) {
-  
+
   # simulate long retrieval time
   Sys.sleep(5)
-  
+
   print(symbol)
-  
+
   # get stock data
   url <- paste0("https://query1.finance.yahoo.com/v8/finance/chart/", symbol, "?period1=", 
                 as.numeric(as.POSIXct(start_date)), "&period2=", as.numeric(as.POSIXct(end_date)), 
                 "&interval=1d")
-  
+
   response <- GET(url)
   json_data <- fromJSON(content(response, as = "text"))
   prices <- json_data$chart$result$indicators$quote[[1]]$close[[1]]
@@ -71,6 +71,8 @@ server <- function(input, output, session) {
   
   # button to submit a task
   observeEvent(input$task, {
+    
+    req(input$company)
     
     # create arguments list dynamically
     for (i in 1:length(input$company)) {
