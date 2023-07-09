@@ -22,6 +22,6 @@ The plan is to add more examples and tutorials on how to implement asynchronous 
 
 ## Watch "Mastering Asynchronous Programming in Shiny"
 
-Coming soon! 👀 You can watch the keynote talk on the ShinyConf2023 back on the Appsilon YouTube channel 🎥
+You can watch [the keynote talk](https://www.youtube.com/watch?v=hltOgAC2mC4) on the ShinyConf2023 back on the Appsilon YouTube channel 🎥
 
-The [slides of the presentation](http://hypebright.nl/wp-content/uploads/2023/04/VeerlevanLeemput-ShinyConf2023-20230317v2.pdf) are already available!
+Get the [slides of the presentation](http://hypebright.nl/wp-content/uploads/2023/04/VeerlevanLeemput-ShinyConf2023-20230317v2.pdf).
