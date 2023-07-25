@@ -1,4 +1,4 @@
-
+library(shiny)
 library(promises)
 library(future)
 
