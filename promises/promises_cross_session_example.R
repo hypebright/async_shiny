@@ -1,4 +1,4 @@
-
+library(shiny)
 library(promises)
 library(future)
 
@@ -46,7 +46,7 @@ server <- function(input, output, session) {
     # reactive values and reactive expressions cannot be read from
     # within a future, therefore, you need to read any reactive
     # values/expressions in advance of launching the future
-    rows <- input$rows
+    rows <- as.numeric(input$rows)
     
     future_promise({
       # long computation
