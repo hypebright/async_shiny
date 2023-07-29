@@ -108,7 +108,7 @@ server <- function(input, output, session) {
     
     invalidateLater(millis = 1000)
     
-    p <- isolate(bg_proc())
+    p <- bg_proc()
     
     # whenever the background job is finished the value of is_alive() will be FALSE
     if (p$is_alive() == FALSE) {
