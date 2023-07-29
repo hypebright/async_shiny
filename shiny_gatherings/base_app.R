@@ -31,7 +31,7 @@ run_task <- function(symbol, start_date, end_date) {
 
 ui <- fluidPage(
   
-  titlePanel("Calling an API synchronously and get AEX stock data 🐌"),
+  titlePanel("Calling an API synchronously and get AEX stock data 🧊 "),
   sidebarLayout(
     sidebarPanel(
       selectInput("company", "Select Company", choices = c("ADYEN.AS", "ASML.AS", "UNA.AS", "HEIA.AS", "INGA.AS", "RDSA.AS", "PHIA.AS", "DSM.AS", "ABN.AS", "KPN.AS")),
