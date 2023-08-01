@@ -16,7 +16,7 @@ Asynchronous programming in Shiny can be achieved through various packages that 
 * **callr**: two examples that show how to spin up background R processes. The basic example runs a long computation in the background, and the markdown example knits a markdown document in the background.
 * **coro**: one example that demonstrates how to program concurrently using the async() function from `coro`. In this example, we also use `promises` and we demonstrate how `promise_all()` works to handle multiple promises at the same time. 
 * **mirai**: two examples that will walk you through the minimalist package called `mirai` (which means future in Japanese). `mirai` provides a simple interface to efficiently schedule tasks. On top of `mirai`, there's a package called `crew` that helps you to manage and control workers. There are two ways to implement `mirai` in a Shiny app: use `mirai.promises` instead of a promise, or use the `crew` package. For more extensive documentation check out [mirai](https://github.com/shikokuchuo/mirai) and [crew](https://github.com/wlandau/crew) on GitHub. Because of the extended functionality and available documentation, using `crew` seems the preferred option.
-* the `shiny_gatherings` folder contains 3 Shiny apps: 1 base app, 1 app turning the base into an async app with `crew`, and 1 app turning the base app into an async app with `callr`. Coming soon: the video that will discuss these examples in depth 🙌.
+* the `shiny_gatherings` folder contains 3 Shiny apps: 1 base app, 1 app turning the base into an async app with `crew`, and 1 app turning the base app into an async app with `callr`. There's also a [video on YouTube](https://www.youtube.com/watch?v=DTMVzK7iZFU) where I go over these examples 🙌.
 
 ## Future plans
 
