@@ -63,14 +63,12 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   # reactive values and outputs
-  reactive_result <- reactiveVal(NULL)
-  reactive_result2 <- reactiveVal(NULL)
-  reactive_result_retrieved <- reactiveVal(FALSE)
-  reactive_result2_retrieved <- reactiveVal(FALSE)
+  reactive_task_counter <- reactiveVal(0)
+  reactive_results <- reactiveValues()
   reactive_status <- reactiveVal("No task submitted yet")
   reactive_poll <- reactiveVal(FALSE)
-  output$stock_plot <- renderPlot(reactive_result())
-  output$stock_plot2 <- renderPlot(reactive_result2())
+  output$stock_plot <- renderPlot(reactive_results$task_1)
+  output$stock_plot2 <- renderPlot(reactive_results$task_2)
   output$status <- renderText(reactive_status())
   
   # crew controller
@@ -112,13 +110,12 @@ server <- function(input, output, session) {
     result <- controller$pop()$result
     
     if (!is.null(result)) {
-      if (reactive_result_retrieved() == FALSE) {
-        reactive_result(result[[1]])
-        reactive_result_retrieved(TRUE)
-      } else if(reactive_result2_retrieved() == FALSE) {
-        reactive_result2(result[[1]])
-        reactive_result2_retrieved(TRUE)
-      }
+      
+      task_no <- reactive_task_counter() + 1
+      
+      reactive_task_counter(task_no)
+      
+      reactive_results[[paste0("task_", task_no)]] <- result[[1]]
       
       print(controller$summary()) # get a summary of workers
       
