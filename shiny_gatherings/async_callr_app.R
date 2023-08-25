@@ -69,8 +69,6 @@ server <- function(input, output, session) {
   # button to submit a task
   observeEvent(input$task, {
     
-    reactive_status("Running 🏃")
-    
     p <-
       
       r_bg(
