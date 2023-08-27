@@ -71,8 +71,8 @@ server <- function(input, output, session) {
   output$status <- renderText(reactive_status())
   
   observe({
-    lapply(names(reactive_results), function(task_no) {
-      output[[task_no]] <- renderPlot(reactive_results[[task_no]])
+    lapply(names(reactive_results), function(task_name) {
+      output[[task_name]] <- renderPlot(reactive_results[[task_name]])
     })
   })
   
@@ -80,8 +80,8 @@ server <- function(input, output, session) {
     req(reactive_task_counter() > 0)
     
     # create a list that holds all the plot outputs
-    plot_output_list <- lapply(names(reactive_results), function(task_no) {
-      plotOutput(task_no)
+    plot_output_list <- lapply(names(reactive_results), function(task_name) {
+      plotOutput(task_name)
     })
     
     # create a list of tags
@@ -114,7 +114,8 @@ server <- function(input, output, session) {
         data = list(run_task = run_task,
                     symbol = symbol,
                     start_date = input$dates[1],
-                    end_date = input$dates[2]), 
+                    end_date = input$dates[2]),
+        name = symbol,
         packages = c("httr", "jsonlite", "ggplot2")
       )
     }
@@ -127,13 +128,13 @@ server <- function(input, output, session) {
   observe({
     req(reactive_poll())
     invalidateLater(millis = 500)
-    result <- controller$pop()$result
+    result <- controller$pop()
     
     if (!is.null(result)) {
       
       task_no <- reactive_task_counter() + 1
       
-      reactive_results[[paste0("task_", task_no)]] <- result[[1]]
+      reactive_results[[result$name]] <- result$result[[1]]
       
       reactive_task_counter(task_no)
       
