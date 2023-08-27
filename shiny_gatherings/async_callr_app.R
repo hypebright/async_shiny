@@ -35,7 +35,7 @@ ui <- fluidPage(
   titlePanel("callR: calling an API asynchronously and get AEX stock data 🚀 "), #NEW
   sidebarLayout(
     sidebarPanel(
-      selectInput("company", "Select Company", choices = c("ADYEN.AS", "ASML.AS", "UNA.AS", "HEIA.AS", "INGA.AS", "RDSA.AS", "PHIA.AS", "DSM.AS", "ABN.AS", "KPN.AS")),
+      selectInput("company", "Select Company", choices = c("ADYEN.AS", "ASML.AS", "UNA.AS", "HEIA.AS", "INGA.AS", "RDSA.AS", "PHIA.AS", "ABN.AS", "KPN.AS")),
       dateRangeInput("dates", "Select Date Range", start = Sys.Date() - 365, end = Sys.Date()),
       actionButton("task", "Get stock data (5 seconds)")
     ),
