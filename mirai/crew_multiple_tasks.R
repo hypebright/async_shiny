@@ -43,33 +43,50 @@ ui <- fluidPage(
   titlePanel("Async programming in Shiny: calling an API asynchronously and get AEX stock data"),
   sidebarLayout(
     sidebarPanel(
-      selectizeInput("company", 
-                     "Select Company (max 2 supported)", 
-                     choices = c("ADYEN.AS", "ASML.AS", "UNA.AS", "HEIA.AS", "INGA.AS", "PHIA.AS", "DSM.AS", "ABN.AS", "KPN.AS"),
-                     selected = c("ADYEN.AS", "ASML.AS"),
-                     multiple = TRUE,
-                     options = list(maxItems = 2)),
+      selectInput("company", 
+                  "Select one or more companies", 
+                  choices = c("ADYEN.AS", "ASML.AS", "UNA.AS", "HEIA.AS", "INGA.AS", "PHIA.AS", "ABN.AS", "KPN.AS"),
+                  selected = c("ADYEN.AS", "ASML.AS"),
+                  multiple = TRUE
+      ),
       dateRangeInput("dates", "Select Date Range", start = Sys.Date() - 365, end = Sys.Date()),
       actionButton("task", "Get stock data (5 seconds)")
     ),
     mainPanel(
       textOutput("status"),
-      plotOutput("stock_plot"),
-      plotOutput("stock_plot2")
+      uiOutput("plots")
     )
   )
   
 )
 
 server <- function(input, output, session) {
-  # reactive values and outputs
+  # reactive values
   reactive_task_counter <- reactiveVal(0)
   reactive_results <- reactiveValues()
   reactive_status <- reactiveVal("No task submitted yet")
   reactive_poll <- reactiveVal(FALSE)
-  output$stock_plot <- renderPlot(reactive_results$task_1)
-  output$stock_plot2 <- renderPlot(reactive_results$task_2)
+  
+  # outputs
   output$status <- renderText(reactive_status())
+  
+  observe({
+    lapply(names(reactive_results), function(task_no) {
+      output[[task_no]] <- renderPlot(reactive_results[[task_no]])
+    })
+  })
+  
+  output$plots <- renderUI({
+    req(reactive_task_counter() > 0)
+    
+    # create a list that holds all the plot outputs
+    plot_output_list <- lapply(names(reactive_results), function(task_no) {
+      plotOutput(task_no)
+    })
+    
+    # create a list of tags
+    tagList(plot_output_list)
+  })
   
   # crew controller
   controller <- crew_controller_local(workers = 4, seconds_idle = 10)
@@ -80,6 +97,9 @@ server <- function(input, output, session) {
   
   # button to submit a task
   observeEvent(input$task, {
+    
+    # set task counter to 0 every time "Get stock data" gets clicked
+    reactive_task_counter(0)
     
     # create arguments list dynamically
     for (i in 1:length(input$company)) {
@@ -113,11 +133,9 @@ server <- function(input, output, session) {
       
       task_no <- reactive_task_counter() + 1
       
-      reactive_task_counter(task_no)
-      
       reactive_results[[paste0("task_", task_no)]] <- result[[1]]
       
-      print(controller$summary()) # get a summary of workers
+      reactive_task_counter(task_no)
       
     }
     
