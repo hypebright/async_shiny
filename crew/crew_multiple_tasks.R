@@ -70,18 +70,27 @@ server <- function(input, output, session) {
   output$status <- renderText(reactive_status())
   
   observe({
+    
     lapply(names(reactive_results), function(task_name) {
-      output[[task_name]] <- renderPlot(reactive_results[[task_name]])
+      # unlike lists and envs, you can't remove values from reactiveValues, so we need this extra check
+      # to make sure that we only get the plots that we asked for if we click the action
+      # button multiple times after each other with different inputs
+      if (task_name %in% isolate(input$company)) { 
+        output[[task_name]] <- renderPlot(reactive_results[[task_name]])
+      }
     })
+    
   })
   
   output$plots <- renderUI({
-
+    
     req(reactive_poll() == FALSE)
     
     # create a list that holds all the plot outputs
     plot_output_list <- lapply(names(reactive_results), function(task_name) {
-      plotOutput(task_name)
+      if (task_name %in% isolate(input$company)) {
+        plotOutput(task_name)
+      }
     })
     
     # create a list of tags
