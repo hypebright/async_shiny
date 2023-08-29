@@ -1,4 +1,4 @@
-library(callr) #NEW
+library(crew)
 library(shiny)
 library(ggplot2)
 library(httr)
@@ -30,9 +30,17 @@ run_task <- function(symbol, start_date, end_date) {
   
 }
 
+status_message <- function(n) {
+  if (n > 0) {
+    paste(format(Sys.time()), "tasks in progress ⏳ :", n)
+  } else {
+    "All tasks completed 🚀"
+  }
+}
+
 ui <- fluidPage(
   
-  titlePanel("callR: calling an API asynchronously and get AEX stock data 🚀 "), #NEW
+  titlePanel("Async programming in Shiny: calling an API asynchronously and get AEX stock data"),
   sidebarLayout(
     sidebarPanel(
       selectInput("company", "Select Company", choices = c("ADYEN.AS", "ASML.AS", "UNA.AS", "HEIA.AS", "INGA.AS", "RDSA.AS", "PHIA.AS", "ABN.AS", "KPN.AS")),
@@ -41,7 +49,6 @@ ui <- fluidPage(
     ),
     mainPanel(
       textOutput("status"),
-      textOutput("time"),
       plotOutput("stock_plot")
     )
   )
@@ -49,80 +56,49 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
-  
-  # reactive values
+  # reactive values and outputs
   reactive_result <- reactiveVal(ggplot())
   reactive_status <- reactiveVal("No task submitted yet")
-  bg_proc <- reactiveVal(NULL) #NEW
-  reactive_poll <- reactiveVal(FALSE) #NEW
-  
-  # outputs
+  reactive_poll <- reactiveVal(FALSE)
   output$stock_plot <- renderPlot(reactive_result())
-  
   output$status <- renderText(reactive_status())
   
-  output$time <- renderText({
-    invalidateLater(1000, session)
-    as.character(Sys.time())
-  })
+  # crew controller
+  controller <- crew_controller_local(workers = 4, seconds_idle = 10)
+  controller$start()
+  
+  # make sure to terminate the controller on stop
+  onStop(function() controller$terminate())
   
   # button to submit a task
   observeEvent(input$task, {
-    
-    p <-
-      
-      r_bg(
-        
-        func =
-          function(run_task, symbol, start_date, end_date) {
-            
-            library(httr)
-            library(jsonlite)
-            library(ggplot2)
-            
-            # the result
-            return(run_task(symbol, start_date, end_date))
-            
-          },
-        
-        supervise = TRUE, 
-        args = list(run_task = run_task,
-                    symbol = input$company,
-                    start_date = input$dates[1],
-                    end_date = input$dates[2])
-        
-      )
-    
-    # update reactive vals
-    bg_proc(p)
+    controller$push(
+      command = run_task(symbol, start_date, end_date),
+      # pass the function to the workers, and arguments needed
+      data = list(run_task = run_task,
+                  symbol = input$company,
+                  start_date = input$dates[1],
+                  end_date = input$dates[2]), 
+      packages = c("httr", "jsonlite", "ggplot2")
+    )
     reactive_poll(TRUE)
-    reactive_status("Running 🏃")
     
   })
   
+  # event loop to collect finished tasks
   observe({
-    
     req(reactive_poll())
+    invalidateLater(millis = 100)
+    result <- controller$pop()$result
     
-    invalidateLater(millis = 1000)
-    
-    p <- bg_proc()
-    
-    # whenever the background job is finished the value of is_alive() will be FALSE
-    if (p$is_alive() == FALSE) {
-      
-      reactive_status("Done ✅ ")
-      
-      reactive_poll(FALSE)
-      bg_proc(NULL)
-      
-      # update the table data with results
-      reactive_result(p$get_result())
-      
+    if (!is.null(result)) {
+      reactive_result(result[[1]])
+      print(controller$summary()) # get a summary of workers
     }
     
+    reactive_status(status_message(n = sum(controller$schedule$summary())))
+    reactive_poll(controller$nonempty())
   })
-  
 }
 
 shinyApp(ui = ui, server = server)

@@ -40,7 +40,7 @@ ui <- fluidPage(
     sidebarPanel(
       selectizeInput("company", 
                      "Select Company (max 2 supported)", 
-                     choices = c("ADYEN.AS", "ASML.AS", "UNA.AS", "HEIA.AS", "INGA.AS", "PHIA.AS", "DSM.AS", "ABN.AS", "KPN.AS"),
+                     choices = c("ADYEN.AS", "ASML.AS", "UNA.AS", "HEIA.AS", "INGA.AS", "PHIA.AS", "ABN.AS", "KPN.AS"),
                      selected = c("ADYEN.AS", "ASML.AS"),
                      multiple = TRUE,
                      options = list(maxItems = 2)),
