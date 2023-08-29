@@ -62,7 +62,6 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   # reactive values
-  reactive_task_counter <- reactiveVal(0)
   reactive_results <- reactiveValues()
   reactive_status <- reactiveVal("No task submitted yet")
   reactive_poll <- reactiveVal(FALSE)
@@ -77,7 +76,8 @@ server <- function(input, output, session) {
   })
   
   output$plots <- renderUI({
-    req(reactive_task_counter() > 0)
+
+    req(reactive_poll() == FALSE)
     
     # create a list that holds all the plot outputs
     plot_output_list <- lapply(names(reactive_results), function(task_name) {
@@ -97,9 +97,6 @@ server <- function(input, output, session) {
   
   # button to submit a task
   observeEvent(input$task, {
-    
-    # set task counter to 0 every time "Get stock data" gets clicked
-    reactive_task_counter(0)
     
     # create arguments list dynamically
     for (i in 1:length(input$company)) {
@@ -132,11 +129,7 @@ server <- function(input, output, session) {
     
     if (!is.null(result)) {
       
-      task_no <- reactive_task_counter() + 1
-      
       reactive_results[[result$name]] <- result$result[[1]]
-      
-      reactive_task_counter(task_no)
       
     }
     
