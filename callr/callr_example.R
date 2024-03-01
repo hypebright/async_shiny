@@ -3,7 +3,11 @@ library(callr)
 
 ui <- fluidPage(
   titlePanel("Using callR in Shiny"),
-  textOutput("time"), hr(),
+  p("Notice how the clock keeps ticking during the expensive job:"),
+  textOutput("time"), 
+  br(),
+  p("You can also start quick jobs during the expensive job!"),
+  hr(),
   actionButton("start_job", "Start Expensive Job"),
   actionButton("start_job2", "Start Quick Job"),
   tableOutput("result_table2"),
@@ -11,24 +15,18 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
-
-  output$time <- renderText({
-    invalidateLater(1000, session)
-    as.character(Sys.time())
-  })
   
   # initiate reactive values
   bg_proc <- reactiveVal(NULL)
   check_finished <- reactiveVal(FALSE)
   table_dt <- reactiveVal(NULL)
-
+  
   # render quick task
-  observeEvent(input$start_job2, {
-    output$result_table2 <- renderTable(data.frame(
-      hey = "I'm done here :)",
-      timestamp = as.character(Sys.time())))
+  output$result_table2 <- renderTable({
+    req(input$start_job2)
+    iris[sample(nrow(iris), size = 10), ]
   })
-
+  
   # set whatever arguments you want to use
   some_argument <- "virginica"
   
@@ -94,6 +92,12 @@ server <- function(input, output, session) {
   
   # Display the table data
   output$result_table <- renderTable(table_dt())
+  
+  # Display time
+  output$time <- renderText({
+    invalidateLater(1000, session)
+    as.character(Sys.time())
+  })
   
 }
 
