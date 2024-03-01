@@ -3,6 +3,7 @@ library(callr)
 
 ui <- fluidPage(
   titlePanel("Using callR in Shiny"),
+  textOutput("time"), hr(),
   actionButton("start_job", "Start Expensive Job"),
   actionButton("start_job2", "Start Quick Job"),
   tableOutput("result_table2"),
@@ -10,6 +11,11 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
+
+  output$time <- renderText({
+    invalidateLater(1000, session)
+    as.character(Sys.time())
+  })
   
   # initiate reactive values
   bg_proc <- reactiveVal(NULL)
