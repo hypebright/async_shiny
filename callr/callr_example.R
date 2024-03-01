@@ -15,15 +15,16 @@ server <- function(input, output, session) {
   bg_proc <- reactiveVal(NULL)
   check_finished <- reactiveVal(FALSE)
   table_dt <- reactiveVal(NULL)
-  
-  # set whatever arguments you want to use
-  some_argument <- "virginica"
-  
+
+  # render quick task
   observeEvent(input$start_job2, {
     output$result_table2 <- renderTable(data.frame(
       hey = "I'm done here :)",
       timestamp = as.character(Sys.time())))
   })
+
+  # set whatever arguments you want to use
+  some_argument <- "virginica"
   
   # callR demonstration
   observeEvent(input$start_job, {
