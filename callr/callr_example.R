@@ -4,6 +4,8 @@ library(callr)
 ui <- fluidPage(
   titlePanel("Using callR in Shiny"),
   actionButton("start_job", "Start Expensive Job"),
+  actionButton("start_job2", "Start Quick Job"),
+  tableOutput("result_table2"),
   tableOutput("result_table")
 )
 
@@ -16,6 +18,12 @@ server <- function(input, output, session) {
   
   # set whatever arguments you want to use
   some_argument <- "virginica"
+  
+  observeEvent(input$start_job2, {
+    output$result_table2 <- renderTable(data.frame(
+      hey = "I'm done here :)",
+      timestamp = as.character(Sys.time())))
+  })
   
   # callR demonstration
   observeEvent(input$start_job, {
@@ -57,7 +65,7 @@ server <- function(input, output, session) {
     invalidateLater(millis = 1000)
     
     # do something while waiting
-    print(paste0("Still busy at ", Sys.time()))
+    cat(paste0("\nStill busy at ", Sys.time()))
     
     p <- isolate(bg_proc())
     
@@ -76,10 +84,10 @@ server <- function(input, output, session) {
     }
     
   })
-
+  
   # Display the table data
   output$result_table <- renderTable(table_dt())
-
+  
 }
 
 shinyApp(ui = ui, server = server)
