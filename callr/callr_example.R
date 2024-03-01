@@ -3,7 +3,14 @@ library(callr)
 
 ui <- fluidPage(
   titlePanel("Using callR in Shiny"),
+  p("Notice how the clock keeps ticking during the expensive job:"),
+  textOutput("time"), 
+  br(),
+  p("You can also start quick jobs during the expensive job!"),
+  hr(),
   actionButton("start_job", "Start Expensive Job"),
+  actionButton("start_job2", "Start Quick Job"),
+  tableOutput("result_table2"),
   tableOutput("result_table")
 )
 
@@ -13,6 +20,12 @@ server <- function(input, output, session) {
   bg_proc <- reactiveVal(NULL)
   check_finished <- reactiveVal(FALSE)
   table_dt <- reactiveVal(NULL)
+  
+  # render quick task
+  output$result_table2 <- renderTable({
+    req(input$start_job2)
+    iris[sample(nrow(iris), size = 10), ]
+  })
   
   # set whatever arguments you want to use
   some_argument <- "virginica"
@@ -57,14 +70,14 @@ server <- function(input, output, session) {
     invalidateLater(millis = 1000)
     
     # do something while waiting
-    print(paste0("Still busy at ", Sys.time()))
+    cat(paste0("\nStill busy at ", Sys.time()))
     
     p <- isolate(bg_proc())
     
     # whenever the background job is finished the value of is_alive() will be FALSE
     if (p$is_alive() == FALSE) {
       
-      print("Finished!")
+      cat("\nFinished!")
       
       check_finished(FALSE)
       bg_proc(NULL)
@@ -76,10 +89,16 @@ server <- function(input, output, session) {
     }
     
   })
-
+  
   # Display the table data
   output$result_table <- renderTable(table_dt())
-
+  
+  # Display time
+  output$time <- renderText({
+    invalidateLater(1000, session)
+    as.character(Sys.time())
+  })
+  
 }
 
 shinyApp(ui = ui, server = server)
