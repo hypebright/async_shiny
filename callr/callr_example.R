@@ -73,7 +73,7 @@ server <- function(input, output, session) {
     # whenever the background job is finished the value of is_alive() will be FALSE
     if (p$is_alive() == FALSE) {
       
-      print("Finished!")
+      cat("\nFinished!")
       
       check_finished(FALSE)
       bg_proc(NULL)
