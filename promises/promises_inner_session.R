@@ -8,6 +8,10 @@ plan(multisession)
 
 ui <- fluidPage(
   titlePanel("Using promises in Shiny (inner-session)"),
+  
+  textOutput("time"),
+  
+  br(),
 
   p("Note that clicking 'Start Expensive Job' does not seem
     like a revolution, but the long computation (our complex Sys.sleep() 😉)
@@ -29,6 +33,11 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
+  
+  output$time <- renderText({
+    invalidateLater(1000, session)
+    as.character(Sys.time())
+  })
 
   # initiate reactive values
   table_dt <- reactiveVal(NULL)

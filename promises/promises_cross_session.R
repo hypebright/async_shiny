@@ -9,10 +9,15 @@ plan(multisession)
 ui <- fluidPage(
   titlePanel("Using promises in Shiny (cross-session)"),
   
+  textOutput("time"),
+  
+  br(),
+  
   p("Note that clicking 'Start Expensive Job' does not seem
     like a revolution, but the long computation (our complex Sys.sleep() 😉)
     is not blocking for the other users in the same session. However,
     it does block the app for the current user until the promise is resolved.
+    You can see that because the clock stops ticking.
     This example demonstrates that by rendering two outputs: a table and text.
     The table uses a promise, the text does not. Yet, we have to wait for the
     table to render until the text appears. So in this example, we
@@ -35,6 +40,11 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
+  
+  output$time <- renderText({
+    invalidateLater(1000, session)
+    as.character(Sys.time())
+  })
 
   # Display the table data
   output$result_table <- renderTable({
