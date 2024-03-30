@@ -10,14 +10,23 @@ Asynchronous programming allows for the execution of multiple tasks concurrently
 
 Asynchronous programming in Shiny can be achieved through various packages that provide mechanisms for running code concurrently, such as [promises](https://github.com/rstudio/promises/), [callr](https://github.com/r-lib/callr/), [coro](https://github.com/r-lib/coro), [mirai](https://github.com/shikokuchuo/mirai) and [crew](https://github.com/wlandau/crew). These packages allow developers to write more efficient and responsive code.
 
+You can also use `promises` in combination with [ExtendedTask](https://rstudio.github.io/shiny/reference/ExtendedTask.html) from Shiny version 1.8.1.
+
 ## Examples
 
-* **promises**: two examples demonstrating cross-session asynchronicity using `promises` and `future`. One example demonstrations inner-session asynchronicity as well by making use of a `reactiveVal()` structure. This follows the examples in [Engineering Production-Grade Shiny Apps](https://engineering-shiny.org/optimizing-shiny-code.html#asynchronous-in-shiny).
-* **callr**: two examples that show how to spin up background R processes. The basic example runs a long computation in the background, and the markdown example knits a markdown document in the background.
-* **coro**: one example that demonstrates how to program concurrently using the async() function from `coro`. In this example, we also use `promises` and we demonstrate how `promise_all()` works to handle multiple promises at the same time. 
+* **promises**: two examples demonstrating cross-session asynchronicity using `promises` and `future`. One example demonstrations inner-session asynchronicity as well by making use of a `reactiveVal()` structure. This follows the examples in [Engineering Production-Grade Shiny Apps](https://engineering-shiny.org/optimizing-shiny-code.html#asynchronous-in-shiny), and it is kind of a workaround. `promises_extendedtask.R` contains an example with `ExtendedTask` from Shiny 1.8.1, which makes it easy to achieve both cross-session and inner-session asynchronicity.
+* **callr**: three examples that show how to spin up background R processes. `callr_single_task.R` runs a long computation in the background, `callr_rmd.R` knits a markdown document in the background, and `callr_nonblocking.R` demonstrates how this is not blocking the process by displaying a clock.
+* **coro**: one example that demonstrates how to program concurrently using the async() function from `coro`. In this example, we also use `promises` and we demonstrate how `promise_all()` works to handle multiple promises at the same time.
 * **mirai**: one example that will walk you through the minimalist package called `mirai` (which means future in Japanese). `mirai` provides a simple interface to efficiently schedule tasks. You can implement `mirai` in a Shiny app by using `mirai.promises` instead of a promise. For more extensive documentation check out [mirai](https://github.com/shikokuchuo/mirai) on GitHub.
-* **crew**: on top of `mirai`, there's a package called `crew` that helps you to manage and control workers. The interface is pretty neat and intuitive. There's a lot of functionality, which includes the option to specify remote workers. In this folder there are two examples: one that demonstrates how to send a single task to a worker, and one that demonstrates how to send multiple tasks to multiple workers. For more info see [crew](https://github.com/wlandau/crew) on GitHub.
-* the `shiny_gatherings` folder contains 3 Shiny apps: 1 base app, 1 app turning the base into an async app with `crew`, and 1 app turning the base app into an async app with `callr`. There's also a [video on YouTube](https://www.youtube.com/watch?v=DTMVzK7iZFU) where I go over these examples 🙌.
+* **crew**: on top of `mirai`, there's a package called `crew` that helps you to manage and control workers. The interface is pretty neat and intuitive. There's a lot of functionality, which includes the option to specify remote workers. In this folder there are two examples: one that demonstrates how to send a single task to a worker, and one that demonstrates how to send multiple tasks to multiple workers. For more info see [crew](https://github.com/wlandau/crew) on GitHub. There are three examples: `crew_single_task.R`, `crew_multiple_tasks.R`, and `crew_nonblocking.R`, where the latter demonstrates the non-blocking behavior of `crew` clearly.
+
+## YouTube 🎥
+
+I have a couple of videos on YouTube about async programming in Shiny:
+
+* [Launch multiple asynchronous tasks in R Shiny with crew + create dynamic number of outputs](https://www.youtube.com/watch?v=udHK5XVSrlE&t=89s)
+* [Async Programming in Shiny with crew and callr](https://www.youtube.com/watch?v=DTMVzK7iZFU)
+* [Say goodbye to unnecessary waiting: mastering asynchronous programming in Shiny - ShinyConf2023 Keynote Talk](https://www.youtube.com/watch?v=hltOgAC2mC4&t=821s)
 
 ## Future plans
 
@@ -26,9 +35,3 @@ The plan is to add more examples and tutorials on how to implement asynchronous 
 ## Contributors 📣 
 
 Do you want to add examples to this repo? That's awesome 👏 . I'm welcoming all support!
-
-## Watch "Mastering Asynchronous Programming in Shiny"
-
-You can watch [the keynote talk](https://www.youtube.com/watch?v=hltOgAC2mC4) on the ShinyConf2023 back on the Appsilon YouTube channel 🎥
-
-The [slides of the presentation are also available](http://hypebright.nl/wp-content/uploads/2023/04/VeerlevanLeemput-ShinyConf2023-20230317v2.pdf).
