@@ -1,8 +1,8 @@
-library(shiny)
+library(shiny) # at least version 1.8.1
 library(ggplot2)
 library(httr)
 library(jsonlite)
-library(bslib)
+library(bslib) # at least version 0.7.0
 library(future)
 library(promises)
 
