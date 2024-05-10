@@ -1,19 +1,18 @@
 library(shiny)
 library(promises)
 library(mirai)
-library(mirai.promises)
 
 # Function to retrieve stock data
 run_task <- function(symbol, start_date, end_date) {
-
+  
   # simulate long retrieval time
   Sys.sleep(5)
-
+  
   # get stock data
   url <- paste0("https://query1.finance.yahoo.com/v8/finance/chart/", symbol, "?period1=", 
                 as.numeric(as.POSIXct(start_date)), "&period2=", as.numeric(as.POSIXct(end_date)), 
                 "&interval=1d")
-
+  
   response <- GET(url)
   json_data <- fromJSON(content(response, as = "text"))
   prices <- json_data$chart$result$indicators$quote[[1]]$close[[1]]
@@ -28,10 +27,6 @@ run_task <- function(symbol, start_date, end_date) {
     theme_minimal()
   
 }
-
-# set 4 persistent workers
-# if you would use url = ... you can set a remote worker
-daemons(n = 4L)
 
 ui <- fluidPage(
   
@@ -79,10 +74,11 @@ server <- function(input, output, session) {
       
       print(symbol)
       
-      args <- list(run_task = run_task, 
-                   symbol = symbol,
-                   start_date = input$dates[1],
-                   end_date = input$dates[2]
+      args <- list(
+        run_task = run_task, 
+        symbol = symbol,
+        start_date = input$dates[1],
+        end_date = input$dates[2]
       )
       
       mirai_args[[paste0("args", i)]] <- args
@@ -99,12 +95,7 @@ server <- function(input, output, session) {
     
     output$stock_plot1 <- renderPlot(
       mirai(
-        {
-          library("ggplot2")
-          library("jsonlite")
-          library("httr")
-          run_task(symbol, start_date, end_date)
-        },
+        run_task(symbol, start_date, end_date),
         .args = mirai_args$args1
       )
       %...>% plot())
@@ -117,12 +108,7 @@ server <- function(input, output, session) {
     
     output$stock_plot2 <- renderPlot(
       mirai(
-        {
-          library("ggplot2")
-          library("jsonlite")
-          library("httr")
-          run_task(symbol, start_date, end_date)
-        },
+        run_task(symbol, start_date, end_date),
         .args = mirai_args$args2
       )
       %...>% plot())
@@ -134,4 +120,19 @@ server <- function(input, output, session) {
   
 }
 
-shinyApp(ui = ui, server = server)
+app <- shinyApp(ui = ui, server = server)
+
+# set 4 persistent workers
+# if you would use daemons(url = ...) you can set a remote worker
+with(
+  daemons(4),
+  {
+    # pre-load packages on all workers
+    everywhere({
+      library("ggplot2")
+      library("jsonlite")
+      library("httr")
+    })
+    runApp(app)
+  }
+)
