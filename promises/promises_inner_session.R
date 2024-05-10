@@ -36,7 +36,7 @@ server <- function(input, output, session) {
   
   output$time <- renderText({
     invalidateLater(1000, session)
-    as.character(Sys.time())
+    format(Sys.time(), "%H:%M:%S %p")
   })
 
   # initiate reactive values
