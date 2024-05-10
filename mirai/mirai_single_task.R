@@ -43,6 +43,7 @@ ui <- fluidPage(
       actionButton("task", "Get stock data (5 seconds each)")
     ),
     mainPanel(
+      textOutput("time"),
       fluidRow(
         plotOutput("stock_plot1")
       ),
@@ -54,6 +55,11 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
+  
+  output$time <- renderText({
+    invalidateLater(1000, session)
+    format(Sys.time(), "%H:%M:%S %p")
+  })
   
   # reactive values
   mirai_args <- reactiveValues(args1 = NULL,
@@ -88,7 +94,6 @@ server <- function(input, output, session) {
   })
   
   # Note: this code is not dynamic and would need more work
-  # put req() outside renderPlot(), otherwise mirai.promises doesn't work properly
   observe({
     
     req(mirai_args$args1)
