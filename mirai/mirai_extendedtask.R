@@ -80,8 +80,7 @@ server <- function(input, output, session) {
     reactive_status("Running 🏃")
     stock_results$invoke(symbol = input$company, 
                          start_date = input$dates[1], 
-                         end_date = input$dates[2],
-                         run = run_task)
+                         end_date = input$dates[2])
   })
   
   observeEvent(stock_results$result(), {
@@ -97,12 +96,15 @@ app <- shinyApp(ui = ui, server = server)
 with(
   daemons(4),
   {
-    # pre-load packages on all workers
-    everywhere({
-      library("ggplot2")
-      library("jsonlite")
-      library("httr")
-    })
+    # pre-load packages and helper function on all workers
+    everywhere(
+      {
+        library("ggplot2")
+        library("jsonlite")
+        library("httr")
+      },
+      run = run_task
+    )
     runApp(app)
   }
 )
