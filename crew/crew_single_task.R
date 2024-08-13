@@ -1,4 +1,4 @@
-library(crew)
+library(crew) # version 0.9.5
 library(shiny)
 library(ggplot2)
 library(httr)
@@ -34,7 +34,7 @@ status_message <- function(n) {
   if (n > 0) {
     paste(format(Sys.time()), "tasks in progress ⏳ :", n)
   } else {
-    "All tasks completed 🚀"
+    paste(format(Sys.time()), "All tasks completed 🚀")
   }
 }
 
@@ -96,8 +96,14 @@ server <- function(input, output, session) {
       print(controller$summary()) # get a summary of workers
     }
     
-    reactive_status(status_message(n = sum(controller$schedule$summary())))
-    reactive_poll(controller$nonempty())
+    # wait for tasks to be assigned to workers
+    if (sum(controller$client$summary()$assigned) > 0) {
+      reactive_status(status_message(n = sum(controller$client$summary()$assigned) - sum(controller$client$summary()$complete)))
+      reactive_poll(controller$nonempty())
+    } else {
+      reactive_status(paste(format(Sys.time()), "launching necessary workers..."))
+    }
+    
   })
 }
 
