@@ -3,12 +3,20 @@ library(shiny)
 library(ggplot2)
 library(httr)
 library(jsonlite)
+library(promises)
+
+# This demo uses the integration of mirai and promises, to immediately
+# show the results of the tasks as they are completed. This is done by
+# using the `collect_result` function to collect the results of the tasks
+# as they are completed, and then updating the reactiveValues with the
+# results. This makes use of event-driven promises, very similar to 
+# the combination mirai + ExtendedTask in Shiny.
 
 # Function to retrieve stock data
 run_task <- function(symbol, start_date, end_date) {
   
-  # simulate long retrieval time
-  Sys.sleep(5)
+  # simulate long retrieval time, randomly between 3 and 10 seconds
+  Sys.sleep(runif(1, 3, 10))
   
   # get stock data
   url <- paste0("https://query1.finance.yahoo.com/v8/finance/chart/", symbol, "?period1=", 
@@ -32,10 +40,20 @@ run_task <- function(symbol, start_date, end_date) {
 
 status_message <- function(n) {
   if (n > 0) {
-    paste(format(Sys.time()), "tasks in progress ⏳ :", n)
+    paste("Current tasks in progress ⏳ :", n)
   } else {
-    paste(format(Sys.time()), "All tasks completed 🚀")
+    paste("All tasks completed 🚀 at", format(Sys.time()))
   }
+}
+
+collect_result <- function(ignore, controller, reactive_results, reactive_status) {
+  result <- controller$pop()
+  
+  if (!is.null(result)) {
+    reactive_results[[result$name]] <- result$result[[1]]
+  }
+  
+  reactive_status(status_message(n = sum(controller$client$summary()$assigned) - sum(controller$client$summary()$complete)))
 }
 
 ui <- fluidPage(
@@ -53,6 +71,7 @@ ui <- fluidPage(
       actionButton("task", "Get stock data (5 seconds)")
     ),
     mainPanel(
+      textOutput("clock"),
       textOutput("status"),
       uiOutput("plots")
     )
@@ -64,27 +83,29 @@ server <- function(input, output, session) {
   # reactive values
   reactive_results <- reactiveValues()
   reactive_status <- reactiveVal("No task submitted yet")
-  reactive_poll <- reactiveVal(FALSE)
   
   # outputs
+  output$clock <- renderText({
+    invalidateLater(500)
+    format(Sys.time())
+  })
+  
   output$status <- renderText(reactive_status())
   
   observe({
-
+    
     lapply(names(reactive_results), function(task_name) {
       # unlike lists and envs, you can't remove values from reactiveValues, so we need this extra check
       # to make sure that we only get the plots that we asked for if we click the action
       # button multiple times after each other with different inputs
-      if (task_name %in% isolate(input$company)) {
+      if (task_name %in% isolate(input$company)) { 
         output[[task_name]] <- renderPlot(reactive_results[[task_name]])
       }
     })
-
+    
   })
   
   output$plots <- renderUI({
-    
-    req(reactive_poll() == FALSE)
     
     # create a list that holds all the plot outputs
     plot_output_list <- lapply(names(reactive_results), function(task_name) {
@@ -100,20 +121,14 @@ server <- function(input, output, session) {
   # crew controller
   controller <- crew_controller_local(workers = 4, seconds_idle = 10)
   controller$start()
+  controller$autoscale()
   
   # make sure to terminate the controller on stop
   onStop(function() controller$terminate())
   
-  # button to submit a task
   observeEvent(input$task, {
     
-    # create arguments list dynamically
-    for (i in 1:length(input$company)) {
-      
-      symbol <- input$company[i] 
-      
-      print(symbol)
-      
+    lapply(input$company, function(symbol) {
       controller$push(
         command = run_task(symbol, start_date, end_date),
         # pass the function to the workers, and arguments needed
@@ -123,31 +138,12 @@ server <- function(input, output, session) {
                     end_date = input$dates[2]),
         name = symbol,
         packages = c("httr", "jsonlite", "ggplot2")
-      )
-    }
+      ) %...>%
+        collect_result(controller, reactive_results, reactive_status)
+    })
     
-    reactive_poll(TRUE)
-    
-  })
-  
-  # event loop to collect finished tasks
-  observe({
-    req(reactive_poll())
-    invalidateLater(millis = 500)
-    result <- controller$pop()
-    
-    if (!is.null(result)) {
-      reactive_results[[result$name]] <- result$result[[1]]
-    }
-    
-    # wait for tasks to be assigned to workers
-    if (sum(controller$client$summary()$assigned) > 0) {
-      reactive_status(status_message(n = sum(controller$client$summary()$assigned) - sum(controller$client$summary()$complete)))
-      reactive_poll(controller$nonempty())
-    } else {
-      reactive_status(paste(format(Sys.time()), "launching necessary workers..."))
-    }
-    
+    # this code runs even though the promise hasn't completed yet
+    reactive_status(status_message(n = length(input$company)))
   })
 }
 
