@@ -1,8 +1,11 @@
 ## Some notes about this example:
 ## - This example uses the ellmer package to define a data model and
 ##   perform structured chat with the model.
-## - This example requires an Anthropic API key. See
-##   https://www.anthropic.com/docs/api for more information.
+## - This example requires an Anthrophic API key. See
+##   https://platform.claude.com/docs/en/home for more information.
+## - Make sure to set the environment variable: ANTHROPIC_API_KEY=[your_key]
+## - Note that Anthrophic unified its branding into Claude (September 2025).
+##   See more here: https://platform.claude.com/docs/en/release-notes/overview#september-16-2025
 ## - The chat is divided into two tasks, because we can't call a tool
 ##   from within a structured chat. The first task is a regular chat
 ##   that calls the tool to get the weather. The second task is a
@@ -18,7 +21,7 @@
 
 library(shiny) # at least version 1.8.1
 library(bslib) # at least version 0.7.0
-library(ellmer) # at least version 0.3.0
+library(ellmer) # at least version 0.4.0
 library(httr2)
 library(dplyr)
 
@@ -134,13 +137,13 @@ ui <- page_fillable(
       textInput(
         "city",
         "City",
-        value = "Amsterdam",
+        value = "Rotterdam",
         placeholder = "Enter city name"
       ),
       numericInput(
         "age",
         "Baby Age (months)",
-        value = 6,
+        value = 11,
         min = 0,
         max = 24,
         step = 1
@@ -174,10 +177,7 @@ server <- function(input, output, session) {
     # We're using an Extended Task to avoid blocking the session and
     # we start a fresh chat session each time.
     # For a feedback loop, we would use a persistent chat session.
-    chat <- chat_anthropic(
-      model = "claude-sonnet-4-20250514",
-      system_prompt = full_system_prompt
-    )
+    chat <- chat("claude/claude-sonnet-4-5", system_prompt = full_system_prompt)
 
     # Register the tool with the chat
     chat$register_tool(get_current_weather)
@@ -281,12 +281,8 @@ server <- function(input, output, session) {
   output$top_activity <- renderText({
     req(activities_result())
 
-    top_activity <- activities_result()[[which.max(sapply(
-      activities_result(),
-      function(x) {
-        x$fun_score
-      }
-    ))]]
+    top_activity <- activities_result() |>
+      slice_max(fun_score, with_ties = FALSE)
 
     top_activity$name
   })
@@ -294,7 +290,9 @@ server <- function(input, output, session) {
   output$avg_fun_score <- renderText({
     req(activities_result())
 
-    avg_fun_score <- mean(sapply(activities_result(), function(x) x$fun_score))
+    avg_fun_score <- activities_result() |>
+      summarise(avg = mean(fun_score)) |>
+      pull(avg)
 
     round(avg_fun_score, 1)
   })
@@ -302,9 +300,9 @@ server <- function(input, output, session) {
   output$avg_duration <- renderText({
     req(activities_result())
 
-    avg_duration <- mean(sapply(activities_result(), function(x) {
-      x$duration_minutes
-    }))
+    avg_duration <- activities_result() |>
+      summarise(avg = mean(duration_minutes)) |>
+      pull(avg)
 
     round(avg_duration, 1)
   })
@@ -312,9 +310,7 @@ server <- function(input, output, session) {
   output$activities_table <- renderTable({
     req(activities_result())
 
-    activities_df <- do.call(rbind, lapply(activities_result(), as.data.frame))
-
-    activities_df <- activities_df |>
+    activities_df <- activities_result() |>
       arrange(desc(fun_score))
 
     activities_df
