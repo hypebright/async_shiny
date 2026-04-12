@@ -1,0 +1,273 @@
+/* ── Hide Quarto auto-generated title block ──────── */
+#title-block-header,
+.quarto-title-block {
+  display: none !important;
+}
+
+/* ── Constrain width and center on wide screens ─── */
+.cr-section {
+  max-width: 1400px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+main.content {
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+/* ── Closeread background overrides ─────────────── */
+body,
+.quarto-body,
+.cr-section,
+.sticky-col,
+.narrative-col,
+.cr-section .narrative-col,
+.cr-section .sticky-col {
+  background-color: #ffffff !important;
+}
+
+hr {
+  display: none !important;
+}
+
+/* ── Title block ─────────────────────────────────── */
+.presentation-title {
+  padding: 5rem 0 4rem;
+  max-width: 640px;
+}
+.presentation-title .eyebrow {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #3d85c8;
+  margin-bottom: 1rem;
+  display: block;
+}
+.presentation-title h1 {
+  font-size: 4.5rem;
+  font-weight: 900;
+  line-height: 0.95;
+  margin: 0 0 1.25rem;
+  color: #111;
+}
+.presentation-title .subtitle {
+  font-size: 1.15rem;
+  color: #666;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  max-width: 480px;
+}
+.presentation-title .author {
+  font-size: 0.85rem;
+  color: #aaa;
+  border-top: 1px solid #eee;
+  padding-top: 1.25rem;
+  display: block;
+}
+
+/* ── Typography ─────────────────────────────────── */
+.big-stat {
+  font-size: 7rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #ff6b6b;
+  display: block;
+}
+
+.big-statement {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+/* ── Section labels ──────────────────────────────── */
+.section-label {
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #3d85c8;
+  margin: 2rem 0 0.4rem 0;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid #3d85c8;
+  display: inline-block;
+}
+
+/* ── Sticky card (default) ───────────────────────── */
+.sticky-card {
+  background: #fff;
+  border: 1px solid #e8edf2;
+  border-radius: 10px;
+  padding: 2rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  animation: fadeInUp 0.35s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Dark stat card ──────────────────────────────── */
+.stat-block {
+  text-align: center;
+  padding: 2.5rem 1.5rem;
+}
+.stat-block-dark {
+  background: #1a2332;
+  border-color: transparent;
+  box-shadow: none;
+}
+.stat-block-dark .big-stat {
+  color: #ff6b6b;
+}
+.stat-block-dark p {
+  color: #a0b4c8;
+  font-size: 1.15rem;
+  margin-top: 0.75rem;
+}
+.stat-block-dark .stat-source {
+  color: #3a4a5a;
+  border-top-color: #2a3a4a;
+}
+
+/* ── Task bar diagram ────────────────────────────── */
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-family: monospace;
+  font-size: 0.95rem;
+}
+.task-label {
+  width: 90px;
+  font-weight: 600;
+  color: #555;
+  flex-shrink: 0;
+}
+.task-bar {
+  height: 22px;
+  border-radius: 4px;
+  background: #3d85c8;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+.task-bar.waiting {
+  background: #e0e0e0;
+}
+.total-row {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed #ccc;
+  font-weight: 700;
+  font-family: monospace;
+}
+
+/* ── Async comparison table ──────────────────────── */
+.async-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+}
+.async-table th {
+  background: #f0f4f8;
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #dce3ea;
+}
+.async-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid #eee;
+  vertical-align: middle;
+}
+.async-table tr.highlight-row td {
+  background: #eaf3fb;
+  font-weight: 600;
+}
+.check   { color: #2d8a5a; font-weight: 700; }
+.cross   { color: #c0392b; font-weight: 700; }
+.partial { color: #c47000; font-weight: 700; }
+
+/* ── State badges ────────────────────────────────── */
+.state-flow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: monospace;
+  font-size: 1rem;
+  margin-bottom: 8px;
+}
+.state-badge {
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+.state-arrow { color: #aaa; font-size: 1.2rem; }
+.s-initial { background: #f0f0f0; color: #888; }
+.s-running { background: #fff3cd; color: #856404; }
+.s-success { background: #d1e7dd; color: #0a3622; }
+.s-error   { background: #f8d7da; color: #58151c; }
+
+/* ── Rule cards ──────────────────────────────────── */
+.rule-card {
+  background: #fff;
+  border: 1px solid #e8edf2;
+  border-left: 5px solid #e63946;
+  border-radius: 0 10px 10px 0;
+  padding: 1.75rem 2rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  animation: fadeInUp 0.35s ease;
+}
+.rule-card .rule-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: #111;
+}
+.rule-card .rule-body {
+  color: #555;
+  line-height: 1.7;
+  margin: 0;
+}
+
+/* ── Takeaway dark ───────────────────────────────── */
+.takeaway-card {
+  background: #1a2332;
+  border-color: transparent;
+  box-shadow: none;
+  border-radius: 10px;
+  padding: 3rem 2.5rem;
+  text-align: center;
+  animation: fadeInUp 0.35s ease;
+}
+.takeaway-card .takeaway-main {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #ffffff;
+  margin-bottom: 1.25rem;
+}
+.takeaway-card .takeaway-sub {
+  font-size: 1rem;
+  color: #6a8aaa;
+  margin: 0;
+}
+
+/* ── Stat footnote ───────────────────────────────── */
+.stat-source {
+  font-size: 0.68rem;
+  color: #bbb;
+  margin-top: 1.25rem;
+  margin-bottom: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f0f0f0;
+  text-align: left;
+}

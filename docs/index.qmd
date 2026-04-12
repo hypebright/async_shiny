@@ -1,0 +1,403 @@
+---
+title: "ExtendedTask"
+subtitle: "Keeping your Shiny session alive while work happens in the background"
+author: "Veerle Eeftink - van Leemput (Hypebright)"
+format:
+  closeread-html:
+    css: styles.css
+    cr-section:
+      layout: "sidebar-left"
+    embed-resources: true
+---
+
+```{=html}
+<div class="presentation-title">
+  <span class="eyebrow">Shiny · Async Programming</span>
+  <h1>ExtendedTask</h1>
+  <p class="subtitle">Keeping your Shiny session alive while work happens in the background</p>
+  <span class="author">Veerle Eeftink - van Leemput · Hypebright</span>
+</div>
+```
+
+<p class="section-label">Why does this matter?</p>
+
+:::{.cr-section}
+
+:::{#cr-stat1}
+```{=html}
+<div class="sticky-card stat-block stat-block-dark">
+  <span class="big-stat">53%<sup style="font-size:2rem;">¹</sup></span>
+  <p>of mobile users abandon an app that takes longer than <strong>3 seconds</strong> to load.</p>
+  <p class="stat-source"><sup>¹</sup> Google, <em>The Need for Mobile Speed: How Mobile Latency Impacts Publisher Revenue</em>, 2016</p>
+</div>
+```
+:::
+
+:::{#cr-stat2}
+```{=html}
+<div class="sticky-card stat-block stat-block-dark">
+  <span class="big-stat">90%<sup style="font-size:2rem;">²</sup></span>
+  <p>abandon after <strong>5 seconds</strong>.</p>
+  <p class="stat-source"><sup>²</sup> Google, <em>Find Out How You Stack Up to New Industry Benchmarks for Mobile Page Speed</em>, 2018</p>
+</div>
+```
+:::
+
+:::{#cr-stat3}
+```{=html}
+<div class="sticky-card stat-block stat-block-dark">
+  <span class="big-stat" style="color:#2d8a5a;">You.</span>
+  <p style="font-size:1.3rem; font-weight:600;">If you build Shiny apps, you are a software developer.<br>Performance is your problem to solve.</p>
+</div>
+```
+:::
+
+It starts with a number. @cr-stat1
+
+It gets worse fast. @cr-stat2
+
+That's a problem. And who's solving that? @cr-stat3
+
+:::
+
+---
+
+<p class="section-label">How Shiny runs code by default</p>
+
+Shiny is **single-threaded and sequential**. Tasks queue up and run one at a time.
+
+:::{.cr-section}
+
+:::{#cr-sync}
+```{=html}
+<div class="sticky-card">
+  <p style="font-weight:600; margin-bottom: 1.2rem; color:#555;">Synchronous execution for 4 tasks</p>
+  <div class="task-row">
+    <span class="task-label">Task A</span>
+    <div class="task-bar" style="width:80px;"></div>
+    <span style="color:#888; font-size:0.85rem;">2s</span>
+  </div>
+  <div class="task-row">
+    <span class="task-label">Task B</span>
+    <div class="task-bar waiting" style="width:80px;"></div>
+    <div class="task-bar" style="width:160px;"></div>
+    <span style="color:#888; font-size:0.85rem;">4s</span>
+  </div>
+  <div class="task-row">
+    <span class="task-label">Task C</span>
+    <div class="task-bar waiting" style="width:240px;"></div>
+    <div class="task-bar" style="width:200px;"></div>
+    <span style="color:#888; font-size:0.85rem;">5s</span>
+  </div>
+  <div class="task-row">
+    <span class="task-label">Task D</span>
+    <div class="task-bar waiting" style="width:440px;"></div>
+    <div class="task-bar" style="width:120px;"></div>
+    <span style="color:#888; font-size:0.85rem;">3s</span>
+  </div>
+  <div class="total-row">Total: 14 seconds</div>
+</div>
+```
+:::
+
+:::{#cr-async}
+```{=html}
+<div class="sticky-card">
+  <p style="font-weight:600; margin-bottom: 1.2rem; color:#555;">Asynchronous execution for 4 tasks</p>
+  <div class="task-row">
+    <span class="task-label">Task A</span>
+    <div class="task-bar" style="width:80px;"></div>
+    <span style="color:#888; font-size:0.85rem;">2s</span>
+  </div>
+  <div class="task-row">
+    <span class="task-label">Task B</span>
+    <div class="task-bar" style="width:160px;"></div>
+    <span style="color:#888; font-size:0.85rem;">4s</span>
+  </div>
+  <div class="task-row">
+    <span class="task-label">Task C</span>
+    <div class="task-bar" style="width:200px;"></div>
+    <span style="color:#888; font-size:0.85rem;">5s</span>
+  </div>
+  <div class="task-row">
+    <span class="task-label">Task D</span>
+    <div class="task-bar" style="width:120px;"></div>
+    <span style="color:#888; font-size:0.85rem;">3s</span>
+  </div>
+  <div class="total-row" style="color: #2d8a5a;">Total: 5 seconds</div>
+</div>
+```
+:::
+
+A user clicks a button. Shiny starts a slow operation like a database query, an API call, or running a heavy model. @cr-sync
+
+Everything else waits. The user is "frozen". If other users share the same R process, they wait too. @cr-sync
+
+The total runtime is the *sum* of all tasks. That adds up fast. @cr-sync
+
+This is what you want: tasks run at the same time. The total time is the duration of the *longest* task and not the sum of all of them. @cr-async
+
+:::
+
+---
+
+<p class="section-label">Two levels of blocking</p>
+
+Who's waiting? Just the user who triggered the task? Or everyone sharing the R process? Or both?
+
+:::{.cr-section}
+
+:::{#cr-table-sync}
+```{=html}
+<div class="sticky-card">
+  <table class="async-table">
+    <thead>
+      <tr>
+        <th>Approach</th>
+        <th>Other users unblocked?</th>
+        <th>Current user unblocked?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Synchronous code</td>
+        <td><span class="cross">✗</span></td>
+        <td><span class="cross">✗</span></td>
+      </tr>
+      <tr>
+        <td>Async with promises / futures</td>
+        <td><span class="check">✓</span></td>
+        <td><span class="partial">~ workaround</span></td>
+      </tr>
+      <tr class="highlight-row">
+        <td><strong>ExtendedTask</strong></td>
+        <td><span class="check">✓</span></td>
+        <td><span class="check">✓</span></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+```
+:::
+
+**Cross-session** blocking means one user's slow task freezes other users sharing the same R process. Async programming with `promises` (amongst others) already solves this. @cr-table-sync
+
+But the user who *triggered* the task is still completely frozen. They can't interact with the app at all while it runs. That's **inner-session** blocking. Something `promises` *can* do, but wasn't designed to do. @cr-table-sync
+
+**ExtendedTask** solves both. Your session stays alive. The clock keeps ticking. The app stays interactive while the task runs in the background. @cr-table-sync
+
+:::
+
+---
+
+<p class="section-label">What is ExtendedTask?</p>
+
+:::{.cr-section}
+
+:::{#cr-definition}
+```{=html}
+<div class="sticky-card">
+  <p style="font-size:1.5rem; font-weight:700; line-height:1.5; margin-bottom:1.2rem;">ExtendedTask is Shiny's built-in way to run a slow operation in the background without blocking the user's session.</p>
+  <ul style="color:#555; line-height:2; font-size:1rem;">
+    <li>Available since Shiny 1.8.1</li>
+    <li>Works with <code>mirai</code>, <code>futures</code>, and <code>promises</code> as backends</li>
+    <li>One invocation at a time: new calls <strong>queue</strong>, they don't drop</li>
+    <li>Built-in integration with <code>bslib::input_task_button()</code></li>
+  </ul>
+</div>
+```
+:::
+
+You give it an async function. It runs in the background. The session stays responsive. @cr-definition
+
+If you call `invoke()` while a task is already running, the new call **queues**: it doesn't get dropped or throw an error. @cr-definition
+
+:::
+
+---
+
+<p class="section-label">The simplest possible example</p>
+
+:::{.cr-section}
+
+:::{#cr-simple}
+```r
+my_task <- ExtendedTask$new(function() {
+  mirai({ Sys.sleep(3); 42 })
+})
+
+observe({
+  my_task$invoke()
+}) |> bindEvent(input$go)
+
+output$result <- renderText({
+  my_task$result()
+})
+```
+:::
+
+Three things. That's the whole pattern. @cr-simple
+
+**Create**: wrap an async function in `ExtendedTask$new()`. The function returns a `mirai` (or a future or a promise). [@cr-simple]{highlight="1-3"}
+
+**Invoke**: call `invoke()` when you want it to run. Pipe an `observe()` into `bindEvent()`. [@cr-simple]{highlight="5-7"}
+
+**Result**: read `result()` in a render function. It waits silently until the task is done, then returns the value. [@cr-simple]{highlight="9-11"}
+
+:::
+
+---
+
+<p class="section-label">The lifecycle</p>
+
+:::{.cr-section}
+
+:::{#cr-states}
+```{=html}
+<div class="sticky-card">
+  <p style="font-weight:600; color:#555; margin-bottom:1.5rem;">Task lifecycle</p>
+
+  <div class="state-flow">
+    <span class="state-badge s-initial">initial</span>
+    <span class="state-arrow">→</span>
+    <span class="state-badge s-running">running</span>
+    <span class="state-arrow">→</span>
+    <span class="state-badge s-success">success</span>
+  </div>
+  <div class="state-flow" style="padding-left:204px;">
+    <span class="state-arrow">↘</span>
+    <span class="state-badge s-error">error</span>
+  </div>
+
+  <div style="margin-top:2rem; font-size:0.9rem; color:#555; line-height:2.2;">
+    <div><code>task$status()</code>: reactive, returns the current state as a string</div>
+    <div><code>task$result()</code>: reactive, returns the result or rethrows on error</div>
+  </div>
+</div>
+```
+:::
+
+When you first create an `ExtendedTask`, it starts in the **initial** state: nothing has happened yet. @cr-states
+
+Call `invoke()` and it moves to **running**. The task is executing in the background. @cr-states
+
+When it finishes cleanly: **success**. `result()` returns the value. If something went wrong: **error**. `result()` rethrows it. @cr-states
+
+Use `status()` to drive your UI:update a badge, record how long it took, show a spinner. @cr-states
+
+:::
+
+---
+
+<p class="section-label">The code</p>
+
+Let's look at how this comes together in practice.
+
+:::{.cr-section}
+
+:::{#cr-full-code}
+```r
+library(shiny)
+library(bslib)
+library(mirai)
+
+run_task <- function(symbol, start_date, end_date) {
+  Sys.sleep(5)
+  # ... fetch stock data ...
+  data.frame(Date = dates, Close = prices)
+}
+
+ui <- page_sidebar(
+  sidebar = sidebar(
+    selectInput("company", "Company", choices = c(...)),
+    dateRangeInput("dates", "Date range", ...),
+    input_task_button("task", "Get stock data")
+  ),
+  echarts4rOutput("stock_plot")
+)
+
+server <- function(input, output, session) {
+
+  stock_results <- ExtendedTask$new(
+    function(...) mirai(run(symbol, start_date, end_date), ...)
+  ) |> bind_task_button("task")
+
+  observe({
+    stock_results$invoke(
+      symbol     = input$company,
+      start_date = input$dates[1],
+      end_date   = input$dates[2]
+    )
+  }) |> bindEvent(input$task)
+
+  observe({
+    if (stock_results$status() == "success") {
+      # record duration, update badge, etc.
+    }
+  }) |> bindEvent(stock_results$status())
+
+  output$stock_plot <- renderEcharts4r({
+    df <- stock_results$result()
+    df |> e_charts(Date) |> e_area(Close)
+  })
+
+}
+```
+:::
+
+This app retrieves stock data. We simulate a delay to mimic a real-world scenario. So... In this case, stock data retrieval takes about 5 seconds. Too long! @cr-full-code
+
+`run_task` returns a plain data frame. Later, a chart is built in the main process from the result. [@cr-full-code]{highlight="5-9"}
+
+`input_task_button` automatically disables while the task runs and re-enables when it's done. No manual wiring needed. [@cr-full-code]{highlight="15"}
+
+`ExtendedTask$new()` wraps your async function. In this case we run it directly with `mirai(run())`, but we also could've wrapped the `run_task` function in `mirai({ ... })` or `future_promise({ ... })`. Both work, but `mirai` is best practice (faster startup time, less per-task overhead, more linear scaling, event-driven vs time-polling). `bind_task_button()` connects it to the button. [@cr-full-code]{highlight="23-26"}
+
+`invoke()` starts the task. Reactive values are passed **as arguments** and not read directly inside the function. [@cr-full-code]{highlight="28-33"}
+
+`status()` lets you react to state changes without touching `result()`. [@cr-full-code]{highlight="35-39"}
+
+`result()` is used directly in a render function. It throws silently while running, so the output simply waits. [@cr-full-code]{highlight="41-44"}
+
+:::
+
+---
+
+<p class="section-label">Two "rules" worth remembering</p>
+
+:::{.cr-section}
+
+:::{#cr-rule1}
+```{=html}
+<div class="rule-card">
+  <p class="rule-title">① Don't read reactive values inside the task function</p>
+  <p class="rule-body">The function runs in a separate process with no access to the Shiny session. Pass all reactive values as arguments to <code>invoke()</code> instead.</p>
+</div>
+```
+:::
+
+:::{#cr-rule2}
+```{=html}
+<div class="rule-card">
+  <p class="rule-title">② Don't use <code>result()</code> inside <code>observeEvent()</code>, <code>eventReactive()</code>, <code>bindEvent()</code> or <code>isolate()</code></p>
+  <p class="rule-body">Using <code>result()</code> in those places will do nothing: invalidation will be ignored. <code>result()</code> is designed for <code>render*</code> functions. Use <code>status()</code> to react to task completion.</p>
+</div>
+```
+:::
+
+The first thing to know: reactive values inside the task function don't work. @cr-rule1
+
+The second: `result()` belongs in render functions.. @cr-rule2
+
+:::
+
+---
+
+<p class="section-label">The takeaway</p>
+
+```{=html}
+<div class="takeaway-card" style="max-width:700px; margin: 4rem auto;">
+  <p class="takeaway-main">ExtendedTask lets your app keep working<br>while your task keeps running.</p>
+  <p class="takeaway-sub">The session stays alive. The clock keeps ticking. The user stays in control.</p>
+</div>
+```

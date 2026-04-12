@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:rstudio.github.io)",
+      "WebFetch(domain:hypebright.nl)"
+    ]
+  }
+}
