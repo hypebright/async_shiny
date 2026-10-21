@@ -1,6 +1,6 @@
 library(shiny) # at least version 1.8.1
 library(bslib) # at least version 0.7.0
-library(shinyasync) # pak::pak("dawiegriesel/shinyasync@v0.3.0")
+library(shinyasync) # pak::pak("dawiegriesel/shinyasync@v0.4.0")
 library(httr)
 library(jsonlite)
 library(ggplot2)
@@ -58,17 +58,11 @@ server <- function(input, output, session) {
   
   # An async reactive, written as reactive() would be. Reactive reads are
   # evaluated in the session, the rest runs on a worker. bindEvent() makes it
-  # run on the button only, as with any reactive.
+  # run on the button only, as with any reactive, and bind_task_button() keeps
+  # the button busy while the task runs, as it does for an ExtendedTask.
   stock_results <- reactiveAsync({
     run_task(input$company, input$dates[1], input$dates[2])
-  }) |> bindEvent(input$task)
-  
-  # input_task_button() stays busy until it is told the task is done. For an
-  # ExtendedTask, bind_task_button() does this; here the task status does.
-  observe({
-    running <- status_async(stock_results) == "running"
-    update_task_button("task", state = if (running) "busy" else "ready")
-  })
+  }) |> bindEvent(input$task) |> bind_task_button("task")
   
   # outputs
   # Reading the async reactive halts, like req(), until it has a value.
