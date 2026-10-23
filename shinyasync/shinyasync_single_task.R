@@ -1,6 +1,7 @@
 library(shiny) # at least version 1.8.1
 library(bslib) # at least version 0.7.0
 library(shinyasync) # pak::pak("dawiegriesel/shinyasync@v0.4.0")
+# attached in the session so shinyasync ships them to the worker for run_task()
 library(httr)
 library(jsonlite)
 library(ggplot2)
